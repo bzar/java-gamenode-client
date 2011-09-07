@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class GamenodeSkeletonImpl implements GamenodeSkeleton {
 
-	private Object skeletonInterface = null;
+	private Object skeletonInterface;
 	
 	public GamenodeSkeletonImpl(Object mySkeletonInterface) {
 		skeletonInterface = mySkeletonInterface;

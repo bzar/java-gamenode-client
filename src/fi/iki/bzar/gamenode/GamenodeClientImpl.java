@@ -2,7 +2,6 @@ package fi.iki.bzar.gamenode;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -14,37 +13,18 @@ import com.clwillingham.socket.io.*;
 
 public class GamenodeClientImpl implements GamenodeClient {
 
-	private Callback connectCallback = new Callback() {
-		@Override
-		public void exec(Object params) {
-		}
-	};
+	private Callback connectCallback = Callback.doNothing;
+	private Callback disconnectCallback = Callback.doNothing;
+	private Callback messageCallback = Callback.doNothing;
+	private Callback errorCallback = Callback.doNothing;
 	
-	private Callback disconnectCallback = new Callback() {
-		@Override
-		public void exec(Object params) {
-		}
-	};
-	
-	private Callback messageCallback = new Callback() {
-		@Override
-		public void exec(Object params) {
-		}
-	};
-	
-	private Callback errorCallback = new Callback() {
-		@Override
-		public void exec(Object params) {
-		}
-	};
-	
-	private GamenodeSkeleton skeleton = null;
-	private GamenodeStub stub = null;
+	private GamenodeSkeleton skeleton = GamenodeSkeleton.emptySkeleton;
+	private GamenodeStub stub = GamenodeStub.emptyStub;
 
-	private IOSocket socket = null;
+	private IOSocket socket;
 	
 	private class CallbackHandler implements MessageCallback {
-		private GamenodeClientImpl client = null;
+		private GamenodeClientImpl client;
 		
 		public CallbackHandler(GamenodeClientImpl myClient) {
 			client = myClient;
@@ -69,14 +49,12 @@ public class GamenodeClientImpl implements GamenodeClient {
 				if(type.equals("message")) {
 					client.getOnMessage().exec(msg.get("content"));
 				} else if(type.equals("response")) {
-					int id = msg.getInt("id");
+					long id = msg.getLong("id");
 					Object content = msg.get("content");
 					GamenodeStub stub = client.getStub();
-					if(stub != null) {
-						stub.getCallback(id).exec(content);
-					}
+					stub.getCallback(id).exec(content);
 				} else if(type.equals("call")) {
-					int id = msg.getInt("id");
+					long id = msg.getLong("id");
 					String method = msg.getString("method");
 					Object params = msg.get("params");
 					GamenodeSkeleton skel = client.getSkeleton();
@@ -174,7 +152,7 @@ public class GamenodeClientImpl implements GamenodeClient {
 		send(result.toString());
 	}
 	
-	public void sendResponse(int id, Object content) throws IOException, JSONException {
+	public void sendResponse(long id, Object content) throws IOException, JSONException {
 		StringWriter result = new StringWriter();
 		new JSONWriter(result)
 			.object()
@@ -196,15 +174,25 @@ public class GamenodeClientImpl implements GamenodeClient {
 	}
 	
 	public void sendMethodList() throws IOException, JSONException {
-		List<String> methods = new ArrayList<String>();
-		if(skeleton != null) {
-			methods = skeleton.getMethodList();
-		}
+		List<String> methods = skeleton.getMethodList();
 		StringWriter result = new StringWriter();
 		new JSONWriter(result)
 			.object()
 				.key("type").value("methodList")
 				.key("methodList").value(new JSONArray(methods))
+			.endObject();
+		send(result.toString());
+	}
+
+	@Override
+	public void sendMethodCall(String method, Object params, long id) throws IOException, JSONException {
+		StringWriter result = new StringWriter();
+		new JSONWriter(result)
+			.object()
+				.key("type").value("call")
+				.key("method").value(method)
+				.key("params").value(params)
+				.key("id").value(id)
 			.endObject();
 		send(result.toString());
 	}

@@ -2,9 +2,7 @@ package fi.iki.bzar.gamenode;
 
 import java.io.IOException;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONWriter;
 
 public interface GamenodeClient {
 	void connect(String url) throws IOException;
@@ -18,7 +16,8 @@ public interface GamenodeClient {
 	void onError(Callback callback);
 	
 	void sendMessage(Object content) throws IOException, JSONException;
-	void sendResponse(int id, Object content) throws IOException, JSONException;
+	void sendResponse(long id, Object content) throws IOException, JSONException;
 	void sendError(Object content) throws IOException, JSONException;
 	void sendMethodList() throws IOException, JSONException;
+	void sendMethodCall(String method, Object params, long id) throws IOException, JSONException;
 }
