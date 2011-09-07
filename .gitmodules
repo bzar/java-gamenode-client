@@ -2,5 +2,5 @@
 	path = lib/java-socket.io.client
 	url = git://github.com/bzar/java-socket.io.client.git
 [submodule "lib/JSON-java"]
-	path = lib/JSON-java
+	path = lib/JSON-java/org/json
 	url = git://github.com/douglascrockford/JSON-java.git
