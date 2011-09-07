@@ -2,6 +2,7 @@ package fi.iki.bzar.gamenode;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -68,6 +69,16 @@ public class GamenodeClientImpl implements GamenodeClient {
 					String content = msg.getString("content");
 					client.getOnError().exec(content);
 				} else if(type.equals("methodList")) {
+					List<String> methods = new ArrayList<String>();
+					JSONArray methodList = msg.getJSONArray("content");
+					for(int i = 0; i < methodList.length(); ++i) {
+						String methodName = methodList.getString(i);
+						if(methodName != null) {
+							methods.add(methodName);
+						}
+					}
+					GamenodeStub stub = new GamenodeStubImpl(methods, client);
+					client.setStub(stub);
 					client.getOnConnect().exec(null);
 				}
 			} catch (JSONException e) {
@@ -102,6 +113,10 @@ public class GamenodeClientImpl implements GamenodeClient {
 		return stub;
 	}
 
+	public void setStub(GamenodeStub newStub) {
+		stub = newStub;
+	}
+	
 	@Override
 	public void onConnect(Callback callback) {
 		connectCallback = callback;
