@@ -1,0 +1,26 @@
+<project>
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <mkdir dir="build/src"/>
+        <mkdir dir="build/src/org.json"/>
+        <copy todir="build/src/org.json">
+            <fileset dir="lib/JSON-java" excludes="Test.java"/>
+        </copy>
+        <copy todir="build/src">
+            <fileset dir="lib/java-socket.io.client/socket.io.client/src"/>
+            <fileset dir="lib/java-socket.io.client/socket.io.client/Java-WebSocket-v0.6-0/src"/>
+            <fileset dir="src"/>
+        </copy>
+        
+        <javac srcdir="build/src" destdir="build/classes"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="build/jar"/>
+        <jar destfile="build/jar/java-gamenode-client.jar" basedir="build/classes" />
+    </target>
+</project>
