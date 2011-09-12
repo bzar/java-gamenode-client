@@ -5,9 +5,9 @@ import java.util.List;
 
 public interface GamenodeSkeleton {
 	List<String> getMethodList();
-	Object call(String method, Object params) throws NoSuchMethodException;
+	Object call(String method, Object... params) throws NoSuchMethodException;
 	
-	static final GamenodeSkeleton emptySkeleton = new GamenodeSkeleton() {
+	static final GamenodeSkeleton EMPTY_SKELETON = new GamenodeSkeleton() {
 
 		@Override
 		public List<String> getMethodList() {
@@ -15,7 +15,7 @@ public interface GamenodeSkeleton {
 		}
 
 		@Override
-		public Object call(String method, Object params)
+		public Object call(String method, Object... params)
 				throws NoSuchMethodException {
 			throw new NoSuchMethodException();
 		}

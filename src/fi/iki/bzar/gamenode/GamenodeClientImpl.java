@@ -14,13 +14,13 @@ import com.clwillingham.socket.io.*;
 
 public class GamenodeClientImpl implements GamenodeClient {
 
-	private Callback connectCallback = Callback.doNothing;
-	private Callback disconnectCallback = Callback.doNothing;
-	private Callback messageCallback = Callback.doNothing;
-	private Callback errorCallback = Callback.doNothing;
+	private ConnectHandler connectHandler = ConnectHandler.EMPTY_HANDLER;
+	private DisconnectHandler disconnectHandler = DisconnectHandler.EMPTY_HANDLER;
+	private MessageHandler messageHandler = MessageHandler.EMPTY_HANDLER;
+	private ErrorHandler errorHandler = ErrorHandler.EMPTY_HANDLER;
 	
-	private GamenodeSkeleton skeleton = GamenodeSkeleton.emptySkeleton;
-	private GamenodeStub stub = GamenodeStub.emptyStub;
+	private GamenodeSkeleton skeleton = GamenodeSkeleton.EMPTY_SKELETON;
+	private GamenodeStub stub = GamenodeStub.EMPTY_STUB;
 
 	private IOSocket socket;
 	
@@ -48,7 +48,7 @@ public class GamenodeClientImpl implements GamenodeClient {
 				JSONObject msg = new JSONObject(message); 
 				String type = msg.getString("type");
 				if(type.equals("message")) {
-					client.getOnMessage().exec(msg.get("content"));
+					client.getOnMessage().onMessage(msg.get("content"));
 				} else if(type.equals("response")) {
 					long id = msg.getLong("id");
 					Object content = msg.get("content");
@@ -67,7 +67,7 @@ public class GamenodeClientImpl implements GamenodeClient {
 					} 
 				} else if(type.equals("error")) {
 					String content = msg.getString("content");
-					client.getOnError().exec(content);
+					client.getOnError().onError(content);
 				} else if(type.equals("methodList")) {
 					List<String> methods = new ArrayList<String>();
 					JSONArray methodList = msg.getJSONArray("content");
@@ -79,7 +79,7 @@ public class GamenodeClientImpl implements GamenodeClient {
 					}
 					GamenodeStub stub = new GamenodeStubImpl(methods, client);
 					client.setStub(stub);
-					client.getOnConnect().exec(null);
+					client.getOnConnect().onConnect();
 				}
 			} catch (JSONException e) {
 				System.err.println("ERROR: Invalid message: " + message);
@@ -104,6 +104,15 @@ public class GamenodeClientImpl implements GamenodeClient {
 	}
 
 	@Override
+	public void disconnect() {
+		try {
+			socket.getWebSocket().close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
 	public GamenodeSkeleton getSkeleton() {
 		return skeleton;
 	}
@@ -118,38 +127,38 @@ public class GamenodeClientImpl implements GamenodeClient {
 	}
 	
 	@Override
-	public void onConnect(Callback callback) {
-		connectCallback = callback;
+	public void onConnect(ConnectHandler handler) {
+		connectHandler = handler;
 	}
 
 	@Override
-	public void onDisconnect(Callback callback) {
-		disconnectCallback = callback;
+	public void onDisconnect(DisconnectHandler handler) {
+		disconnectHandler = handler;
 	}
 
 	@Override
-	public void onMessage(Callback callback) {
-		messageCallback = callback;
+	public void onMessage(MessageHandler handler) {
+		messageHandler = handler;
 	}
 	
-	public void onError(Callback callback) {
-		errorCallback = callback;
+	public void onError(ErrorHandler handler) {
+		errorHandler = handler;
 	}
 	
-	public Callback getOnConnect() {
-		return connectCallback;
+	public ConnectHandler getOnConnect() {
+		return connectHandler;
 	}
 
-	public Callback getOnDisconnect() {
-		return disconnectCallback;
+	public DisconnectHandler getOnDisconnect() {
+		return disconnectHandler;
 	}
 
-	public Callback getOnMessage() {
-		return messageCallback;
+	public MessageHandler getOnMessage() {
+		return messageHandler;
 	}
 	
-	public Callback getOnError() {
-		return errorCallback;
+	public ErrorHandler getOnError() {
+		return errorHandler;
 	}
 
 	private void send(String content) throws IOException, JSONException {
@@ -211,4 +220,5 @@ public class GamenodeClientImpl implements GamenodeClient {
 			.endObject();
 		send(result.toString());
 	}
+
 }

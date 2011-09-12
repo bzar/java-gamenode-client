@@ -19,14 +19,16 @@ public class GamenodeSkeletonImpl implements GamenodeSkeleton {
 		for(Method m : skeletonInterface.getClass().getDeclaredMethods()) {
 			methodNames.add(m.getName());
 		}
+		
 		return methodNames;
 	}
 
 	@Override
-	public Object call(String method, Object params) throws NoSuchMethodException {
+	public Object call(String method, Object... params) throws NoSuchMethodException {
 		Object returnValue = null;
 		try {
-			returnValue = skeletonInterface.getClass().getDeclaredMethod(method, Object.class).invoke(skeletonInterface, params);
+			Object[] wrappedParams = {params};
+			returnValue = skeletonInterface.getClass().getDeclaredMethod(method, Object[].class).invoke(skeletonInterface, wrappedParams);
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		} catch (IllegalArgumentException e) {

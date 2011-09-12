@@ -1,20 +1,32 @@
 package fi.iki.bzar.gamenode;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONException;
+
 public interface GamenodeStub {
 	Callback getCallback(long id);
-	void call(String method, Object params, Callback callback) throws NoSuchMethodException;
+	ReturnValueHandler call(String method, Object... params) throws NoSuchMethodException, IOException, JSONException;
+	List<String> methodList();
 	
-	static final GamenodeStub emptyStub = new GamenodeStub() {
+	static final GamenodeStub EMPTY_STUB = new GamenodeStub() {
 
 		@Override
 		public Callback getCallback(long id) {
-			return Callback.doNothing;
+			return Callback.DO_NOTHING;
 		}
 
 		@Override
-		public void call(String method, Object params, Callback callback)
+		public ReturnValueHandler call(String method, Object... params)
 				throws NoSuchMethodException {
 			throw new NoSuchMethodException();
+		}
+
+		@Override
+		public List<String> methodList() {
+			return new ArrayList<String>();
 		}
 		
 	};

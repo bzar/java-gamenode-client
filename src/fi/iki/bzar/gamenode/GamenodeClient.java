@@ -6,14 +6,15 @@ import org.json.JSONException;
 
 public interface GamenodeClient {
 	void connect(String url) throws IOException;
+	void disconnect();
 	
 	GamenodeSkeleton getSkeleton();
 	GamenodeStub getStub();
 
-	void onConnect(Callback callback);
-	void onDisconnect(Callback callback);
-	void onMessage(Callback callback);
-	void onError(Callback callback);
+	void onConnect(ConnectHandler handler);
+	void onDisconnect(DisconnectHandler handler);
+	void onMessage(MessageHandler handler);
+	void onError(ErrorHandler handler);
 	
 	void sendMessage(Object content) throws IOException, JSONException;
 	void sendResponse(long id, Object content) throws IOException, JSONException;
